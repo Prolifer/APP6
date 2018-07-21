@@ -13,7 +13,7 @@ void packetMaker(char message[], int sizeOfMessageInBits){
 		for (int y = 0; y < sizeOfMessageInBits; y++) {
 			buffer = message[i];
 
-			clientTransportHeader(buffer);
+			clientTransportHeader();
 			clientInternetHeader();
 			clientNetworkHeader();
 		}
