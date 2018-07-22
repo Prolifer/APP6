@@ -9,6 +9,8 @@ Silver Moon ( m00n.silv3r@gmail.com )
 #include "server.h"
 #include "application.h"
 
+#include <iostream>
+
 #pragma comment(lib,"ws2_32.lib") //Winsock Library
 
 #define BUFLEN 512  //Max length of buffer
@@ -16,6 +18,8 @@ Silver Moon ( m00n.silv3r@gmail.com )
 
 int server()
 {
+	char foo;
+
 	SOCKET s;
 	struct sockaddr_in server, si_other;
 	int slen, recv_len;
@@ -52,7 +56,7 @@ int server()
 	//the IPv6 or IPv4 packet header.
 
 	//Create a socket
-	if ((s = socket(AF_INET, SOCK_RAW, 0)) == INVALID_SOCKET)
+	if ((s = socket(AF_INET, SOCK_RAW, IPPROTO_IP)) == INVALID_SOCKET)
 	{
 		printf("Could not create socket : %d", WSAGetLastError());
 	}
@@ -78,8 +82,12 @@ int server()
 		printf("Waiting for data...");
 		fflush(stdout);
 
+		printf("buf : %s\n", buf);
+
 		//clear the buffer by filling null, it might have previously received data
 		memset(buf, '\0', BUFLEN);
+
+		printf("buf : %s\n", buf);
 
 		//try to receive some data, this is a blocking call
 		if ((recv_len = recvfrom(s, buf, BUFLEN, 0, (struct sockaddr *) &si_other, &slen)) == SOCKET_ERROR)
@@ -88,17 +96,21 @@ int server()
 			exit(EXIT_FAILURE);
 		}
 
+		printf("buf : %s\n", buf);
+
 		//print details of the client/peer and the data received
 		printf("Received packet from %s:%d\n", inet_ntoa(si_other.sin_addr), ntohs(si_other.sin_port));
 		printf("Data: %s\n", buf);
-		saveAfterReception(buf);
-
+		
 		//now reply the client with the same data
 		if (sendto(s, buf, recv_len, 0, (struct sockaddr*) &si_other, slen) == SOCKET_ERROR)
 		{
 			printf("sendto() failed with error code : %d", WSAGetLastError());
 			exit(EXIT_FAILURE);
 		}
+		printf("buf : %s\n", buf);
+
+		std::cin >> foo;
 	}
 
 	closesocket(s);
