@@ -119,22 +119,41 @@ int main() //CRC - TRANSMISSION
 	buff = buff << POLY_ORDER;
 	printf("BUFFER OF DATA WITH ORDER N ZEROS ADDED AT AT LSB : %X\n", buff);
 		   
-	//Register MSB position of the buffer for a first time
-	int remBitsToConsider = dataLength + POLY_ORDER;
+	//Register remaining bits of the buffer for a first time
+	int remBitsToConsiderBuffer = dataLength + POLY_ORDER;
 		   
-	while ((buff >> (remBitsToConsider - 1)) == 0 && remBitsToConsider != 0) { remBitsToConsider--; }
-	if (remBitsToConsider <= 0)
-		printf("ERROR : msbPositionBuffer is less or equal to zero");
-	printf("MSB POSITION IN BUFFER AT START : %d\n", remBitsToConsider);
-		   
-	//Calculate remainder for a first time
-	rem = (buff >> (remBitsToConsider - (POLY_ORDER + 1))) ^ POLY_Gx;
-	printf("CALCULATE FIRST REMAINDER : %X\n", rem);
-		   
-	//Operaiton loop to find final remainder (XOR bitwise with polynomial(Gx) on buffer)
-	int i;
-	while (remBitsToConsider > (POLY_ORDER + 1)){//(nextMsbPositionBuffer >= 0){
+	while ((buff >> (remBitsToConsiderBuffer - 1)) == 0 && remBitsToConsiderBuffer != 0) { remBitsToConsiderBuffer--; }
+	if (remBitsToConsiderBuffer <= 0)
+		printf("ERROR : msbPositionBuffer is less or equal to zero, no bits to consider at start");
+	printf("REMAINING BITS TO CONSIDER AT START : %d\n", remBitsToConsiderBuffer);
+	
+	//Initialize variable exposing MSB position in remainder
+	int nextMsbPositionRem = (POLY_ORDER + 1); //Remainder always has a MSB position at the 4th digit or less
 
+	//Calculate remainder for first time
+	rem = (buff >> (remBitsToConsiderBuffer - (POLY_ORDER + 1))) ^ POLY_Gx;
+	printf("CALCULATE FIRST REMAINDER : %X\n", rem);
+
+	//Initialize variable indicating needed bits to have enough bits to recalculate a XOR bitwise operation
+	int neededBitsToRem = 0;
+
+	//Operation loop to find final remainder (XOR bitwise with polynomial(Gx) on buffer)
+	while (remBitsToConsiderBuffer > 0){
+		//Check where is MSB in remainder
+		while ((rem >> (nextMsbPositionRem - 1)) == 0 && nextMsbPositionRem != 0) { nextMsbPositionRem--; }
+
+		//Check bits needed for remainder
+		neededBitsToRem = (POLY_ORDER + 1) - nextMsbPositionRem;
+
+		//Fill remainder with needed bits for re-operation XOR bitwise
+		rem = rem << neededBitsToRem;
+		rem += (buff << (SIZE_IN_BITS_BUFFER - (remBitsToConsiderBuffer - )))
+				>>
+				(SIZE_IN_BITS_BUFFER - (remBitsToConsiderBuffer - ));
+
+		//Calculate next remainder (XOR bitwise)
+		rem = rem ^ POLY_Gx;
+		printf("REM : %X\n", rem);
 	}
 
 		   	
