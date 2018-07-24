@@ -2,8 +2,8 @@
 #include <stdint.h>
 
 //DEFINITIONS KNOWN AND HARDCODED ON BOTH SERVER/CLIENT SIDE
-#define POLY_ORDER	3
-#define POLY_Gx		0b1001
+//#define POLY_ORDER	4
+//#define POLY_Gx		0b1001
 #define SIZE_IN_BITS_BUFFER 64 //8*sizeof(long long)/sizeof(uint8_t)
 
 unsigned long long buff = 0; //TODO : Change type long long for a type requiring less digits knowing the max length of the data (for optimization)
@@ -15,8 +15,11 @@ uint8_t dataCRCArr[204] = "";
 int main() //CRC - TRANSMISSION
 {
 	// TEST - ARGUMENTS OF THE FUNCTION
-	int data = 0b100111010;
-	int dataLength = 9;
+	int REMAINDER_EXP = 0b10;
+	int POLY_ORDER = 4;
+	int POLY_Gx = 0b10011;
+	int data = 0b1101011111;
+	int dataLength = 10;
 	printf("DATA AS ARGUMENT : %X\n", data);
 	// TEST - ARGUMENTS OF THE FUNCTION
 
@@ -60,7 +63,11 @@ int main() //CRC - TRANSMISSION
 
 		if ((remBitsToConsiderBuffer - (POLY_ORDER + 1)) >= 0) {
 			//Calculate remaining bits to consider in the buffer
-			remBitsToConsiderBuffer -= (POLY_ORDER + 1);
+
+			//if()MANQUE UNE CONDITION
+			remBitsToConsiderBuffer -= (POLY_ORDER + 1);//NOT GOOD ENOUGH
+			
+			
 			printf("REMAINING BITS CONSIDER BUFFER : %d\n", remBitsToConsiderBuffer);
 
 			//Fill remainder with needed bits for re-operation XOR bitwise
@@ -85,10 +92,14 @@ int main() //CRC - TRANSMISSION
 		}
 	}
 
+	if ((rem >> POLY_ORDER) & 1) {
+		rem = rem ^ POLY_Gx;
+	}
+
 	// VERIFYING FUNCTION QUALITY
-	printf("REMAINDER EXPECTED: %X\n", 0b1000);
+	printf("REMAINDER EXPECTED: %X\n", REMAINDER_EXP);
 	printf("REMAINDER RESULT: %X\n", rem);
-	if (rem == 0b1000)
+	if (rem == REMAINDER_EXP)
 		printf("FUNCTION DONE\n", buff);
 	else
 		printf("FUNCTION FAILED\n", buff);
